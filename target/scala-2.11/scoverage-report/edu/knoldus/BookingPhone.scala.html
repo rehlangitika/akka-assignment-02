@@ -1,0 +1,884 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          edu/knoldus/BookingPhone.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package edu.knoldus
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor.ActorSystem
+</span>4 <span style=''>import akka.pattern.ask
+</span>5 <span style=''>import akka.routing.FromConfig
+</span>6 <span style=''>import akka.util.Timeout
+</span>7 <span style=''>import com.typesafe.config.ConfigFactory
+</span>8 <span style=''>import edu.knoldus.actors.{PurchaseActor, PurchaseRequestHandler, ValidationActor}
+</span>9 <span style=''>import edu.knoldus.models.Customer
+</span>10 <span style=''>
+</span>11 <span style=''>import scala.concurrent.ExecutionContext.Implicits.global
+</span>12 <span style=''>import scala.concurrent.duration._
+</span>13 <span style=''>
+</span>14 <span style=''>object BookingPhone extends App {
+</span>15 <span style=''>
+</span>16 <span style=''>  val config = </span><span style='background: #F0ADAD'>ConfigFactory.parseString(
+</span>17 <span style=''></span><span style='background: #F0ADAD'>    &quot;&quot;&quot;
+</span>18 <span style=''></span><span style='background: #F0ADAD'>      |akka.actor.deployment {
+</span>19 <span style=''></span><span style='background: #F0ADAD'>      | /poolRouter {
+</span>20 <span style=''></span><span style='background: #F0ADAD'>      |   router = balancing-pool
+</span>21 <span style=''></span><span style='background: #F0ADAD'>      |   nr-of-instances = 5
+</span>22 <span style=''></span><span style='background: #F0ADAD'>      | }
+</span>23 <span style=''></span><span style='background: #F0ADAD'>      |}
+</span>24 <span style=''></span><span style='background: #F0ADAD'>    &quot;&quot;&quot;.stripMargin
+</span>25 <span style=''></span><span style='background: #F0ADAD'>  )</span><span style=''>
+</span>26 <span style=''>  implicit val timeout = </span><span style='background: #F0ADAD'>Timeout(1000.seconds)</span><span style=''>
+</span>27 <span style=''>  val actorSystem = </span><span style='background: #F0ADAD'>ActorSystem(&quot;BookingPhone&quot;, config)</span><span style=''>
+</span>28 <span style=''>  val purchaseRef = </span><span style='background: #F0ADAD'>actorSystem.actorOf(FromConfig.props(PurchaseActor.purchaseProps), &quot;poolRouter&quot;)</span><span style=''>
+</span>29 <span style=''>  //val validationRef = actorSystem.actorOf(Props(classOf[ValidationActor], purchaseRef))
+</span>30 <span style=''>  val validationRef = </span><span style='background: #F0ADAD'>actorSystem.actorOf(ValidationActor.validationProps(purchaseRef))</span><span style=''>
+</span>31 <span style=''>  //val phoneRequestRef = actorSystem.actorOf(Props(classOf[PurchaseRequestHandler], validationRef))
+</span>32 <span style=''>  val phoneRequestRef = </span><span style='background: #F0ADAD'>actorSystem.actorOf(PurchaseRequestHandler.purchaseRequestProps(validationRef))</span><span style=''>
+</span>33 <span style=''>  //val phoneRequestRef1 = actorSystem.actorOf(Props(classOf[PurchaseRequestHandler], validationRef))
+</span>34 <span style=''>  val phoneRequestRef1 = </span><span style='background: #F0ADAD'>actorSystem.actorOf(PurchaseRequestHandler.purchaseRequestProps(validationRef))</span><span style=''>
+</span>35 <span style=''>  val request = </span><span style='background: #F0ADAD'>phoneRequestRef ? Customer(&quot;Gitika&quot;, &quot;Paschim Vihar&quot;, 3455, 9999)</span><span style=''>
+</span>36 <span style=''>  </span><span style='background: #F0ADAD'>request.map { result =&gt;
+</span>37 <span style=''></span><span style='background: #F0ADAD'>    println(result)
+</span>38 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>39 <span style=''>
+</span>40 <span style=''>  val request1 = </span><span style='background: #F0ADAD'>phoneRequestRef1 ? Customer(&quot;Nikita&quot;, &quot;Paschim Vihar&quot;, 3455, 9999)</span><span style=''>
+</span>41 <span style=''>  </span><span style='background: #F0ADAD'>request.map { result =&gt;
+</span>42 <span style=''></span><span style='background: #F0ADAD'>    println(result)
+</span>43 <span style=''></span><span style='background: #F0ADAD'>  }</span><span style=''>
+</span>44 <span style=''>
+</span>45 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          3
+        </td>
+        <td>
+          435
+          -
+          629
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          com.typesafe.config.ConfigFactory.parseString
+        </td>
+        <td style="background: #F0ADAD">
+          com.typesafe.config.ConfigFactory.parseString(scala.this.Predef.augmentString(&quot;\n      |akka.actor.deployment {\n      | /poolRouter {\n      |   router = balancing-pool\n      |   nr-of-instances = 5\n      | }\n      |}\n    &quot;).stripMargin)
+        </td>
+      </tr><tr>
+        <td>
+          17
+        </td>
+        <td>
+          1
+        </td>
+        <td>
+          466
+          -
+          613
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;\n      |akka.actor.deployment {\n      | /poolRouter {\n      |   router = balancing-pool\n      |   nr-of-instances = 5\n      | }\n      |}\n    &quot;
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          2
+        </td>
+        <td>
+          466
+          -
+          625
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.collection.immutable.StringLike.stripMargin
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.augmentString(&quot;\n      |akka.actor.deployment {\n      | /poolRouter {\n      |   router = balancing-pool\n      |   nr-of-instances = 5\n      | }\n      |}\n    &quot;).stripMargin
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          5
+        </td>
+        <td>
+          663
+          -
+          675
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.seconds
+        </td>
+        <td style="background: #F0ADAD">
+          scala.concurrent.duration.`package`.DurationInt(1000).seconds
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          4
+        </td>
+        <td>
+          663
+          -
+          667
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          1000
+        </td>
+      </tr><tr>
+        <td>
+          26
+        </td>
+        <td>
+          6
+        </td>
+        <td>
+          655
+          -
+          676
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.util.Timeout.apply
+        </td>
+        <td style="background: #F0ADAD">
+          akka.util.Timeout.apply(scala.concurrent.duration.`package`.DurationInt(1000).seconds)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          8
+        </td>
+        <td>
+          725
+          -
+          731
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.config
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.config
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          7
+        </td>
+        <td>
+          709
+          -
+          723
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;BookingPhone&quot;
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          9
+        </td>
+        <td>
+          697
+          -
+          732
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ActorSystem.apply
+        </td>
+        <td style="background: #F0ADAD">
+          akka.actor.ActorSystem.apply(&quot;BookingPhone&quot;, BookingPhone.this.config)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          11
+        </td>
+        <td>
+          773
+          -
+          818
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.routing.Pool.props
+        </td>
+        <td style="background: #F0ADAD">
+          akka.routing.FromConfig.props(edu.knoldus.actors.PurchaseActor.purchaseProps)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          13
+        </td>
+        <td>
+          753
+          -
+          833
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ActorRefFactory.actorOf
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.actorSystem.actorOf(akka.routing.FromConfig.props(edu.knoldus.actors.PurchaseActor.purchaseProps), &quot;poolRouter&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          10
+        </td>
+        <td>
+          790
+          -
+          817
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseActor.purchaseProps
+        </td>
+        <td style="background: #F0ADAD">
+          edu.knoldus.actors.PurchaseActor.purchaseProps
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          12
+        </td>
+        <td>
+          820
+          -
+          832
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;poolRouter&quot;
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          14
+        </td>
+        <td>
+          998
+          -
+          1009
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.purchaseRef
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.purchaseRef
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          16
+        </td>
+        <td>
+          946
+          -
+          1011
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ActorRefFactory.actorOf
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.actorSystem.actorOf(edu.knoldus.actors.ValidationActor.validationProps(BookingPhone.this.purchaseRef))
+        </td>
+      </tr><tr>
+        <td>
+          30
+        </td>
+        <td>
+          15
+        </td>
+        <td>
+          966
+          -
+          1010
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.actors.ValidationActor.validationProps
+        </td>
+        <td style="background: #F0ADAD">
+          edu.knoldus.actors.ValidationActor.validationProps(BookingPhone.this.purchaseRef)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          17
+        </td>
+        <td>
+          1201
+          -
+          1214
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.validationRef
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.validationRef
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          19
+        </td>
+        <td>
+          1137
+          -
+          1216
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ActorRefFactory.actorOf
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.actorSystem.actorOf(edu.knoldus.actors.PurchaseRequestHandler.purchaseRequestProps(BookingPhone.this.validationRef))
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          18
+        </td>
+        <td>
+          1157
+          -
+          1215
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseRequestHandler.purchaseRequestProps
+        </td>
+        <td style="background: #F0ADAD">
+          edu.knoldus.actors.PurchaseRequestHandler.purchaseRequestProps(BookingPhone.this.validationRef)
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          20
+        </td>
+        <td>
+          1408
+          -
+          1421
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.validationRef
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.validationRef
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          22
+        </td>
+        <td>
+          1344
+          -
+          1423
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.ActorRefFactory.actorOf
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.actorSystem.actorOf(edu.knoldus.actors.PurchaseRequestHandler.purchaseRequestProps(BookingPhone.this.validationRef))
+        </td>
+      </tr><tr>
+        <td>
+          34
+        </td>
+        <td>
+          21
+        </td>
+        <td>
+          1364
+          -
+          1422
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseRequestHandler.purchaseRequestProps
+        </td>
+        <td style="background: #F0ADAD">
+          edu.knoldus.actors.PurchaseRequestHandler.purchaseRequestProps(BookingPhone.this.validationRef)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          23
+        </td>
+        <td>
+          1440
+          -
+          1455
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.phoneRequestRef
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.phoneRequestRef
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          26
+        </td>
+        <td>
+          1456
+          -
+          1456
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.timeout
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.timeout
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          25
+        </td>
+        <td>
+          1458
+          -
+          1505
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.models.Customer.apply
+        </td>
+        <td style="background: #F0ADAD">
+          edu.knoldus.models.Customer.apply(&quot;Gitika&quot;, &quot;Paschim Vihar&quot;, 3455L, 9999L)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          28
+        </td>
+        <td>
+          1440
+          -
+          1505
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.pattern.AskableActorRef.?
+        </td>
+        <td style="background: #F0ADAD">
+          qual$1.?(x$1)(x$2, x$3)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          27
+        </td>
+        <td>
+          1456
+          -
+          1456
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.pattern.AskableActorRef.?$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          qual$1.?$default$3(x$1)
+        </td>
+      </tr><tr>
+        <td>
+          35
+        </td>
+        <td>
+          24
+        </td>
+        <td>
+          1440
+          -
+          1455
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          akka.pattern.AskSupport.ask
+        </td>
+        <td style="background: #F0ADAD">
+          akka.pattern.`package`.ask(BookingPhone.this.phoneRequestRef)
+        </td>
+      </tr><tr>
+        <td>
+          36
+        </td>
+        <td>
+          30
+        </td>
+        <td>
+          1508
+          -
+          1555
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.request.map[Unit](((result: Any) =&gt; scala.this.Predef.println(result)))(scala.concurrent.ExecutionContext.Implicits.global)
+        </td>
+      </tr><tr>
+        <td>
+          37
+        </td>
+        <td>
+          29
+        </td>
+        <td>
+          1536
+          -
+          1551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.println(result)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          32
+        </td>
+        <td>
+          1574
+          -
+          1590
+        </td>
+        <td>
+          ApplyImplicitView
+        </td>
+        <td>
+          akka.pattern.AskSupport.ask
+        </td>
+        <td style="background: #F0ADAD">
+          akka.pattern.`package`.ask(BookingPhone.this.phoneRequestRef1)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          35
+        </td>
+        <td>
+          1591
+          -
+          1591
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.pattern.AskableActorRef.?$default$3
+        </td>
+        <td style="background: #F0ADAD">
+          qual$2.?$default$3(x$4)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          31
+        </td>
+        <td>
+          1574
+          -
+          1590
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.phoneRequestRef1
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.phoneRequestRef1
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          34
+        </td>
+        <td>
+          1591
+          -
+          1591
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.BookingPhone.timeout
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.timeout
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          36
+        </td>
+        <td>
+          1574
+          -
+          1640
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.pattern.AskableActorRef.?
+        </td>
+        <td style="background: #F0ADAD">
+          qual$2.?(x$4)(x$5, x$6)
+        </td>
+      </tr><tr>
+        <td>
+          40
+        </td>
+        <td>
+          33
+        </td>
+        <td>
+          1593
+          -
+          1640
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.models.Customer.apply
+        </td>
+        <td style="background: #F0ADAD">
+          edu.knoldus.models.Customer.apply(&quot;Nikita&quot;, &quot;Paschim Vihar&quot;, 3455L, 9999L)
+        </td>
+      </tr><tr>
+        <td>
+          41
+        </td>
+        <td>
+          38
+        </td>
+        <td>
+          1643
+          -
+          1690
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #F0ADAD">
+          BookingPhone.this.request.map[Unit](((result: Any) =&gt; scala.this.Predef.println(result)))(scala.concurrent.ExecutionContext.Implicits.global)
+        </td>
+      </tr><tr>
+        <td>
+          42
+        </td>
+        <td>
+          37
+        </td>
+        <td>
+          1671
+          -
+          1686
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Predef.println
+        </td>
+        <td style="background: #F0ADAD">
+          scala.this.Predef.println(result)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>

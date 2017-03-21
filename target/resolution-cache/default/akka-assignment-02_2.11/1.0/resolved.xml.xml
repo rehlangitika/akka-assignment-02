@@ -4,7 +4,7 @@
 		module="akka-assignment-02_2.11"
 		revision="1.0"
 		status="integration"
-		publication="20170321124354"
+		publication="20170321235957"
 	>
 		<description>
 		akka-assignment-02
@@ -24,6 +24,7 @@
 		<conf name="docs" visibility="public" description=""/>
 		<conf name="pom" visibility="public" description=""/>
 		<conf name="scala-tool" visibility="private" description=""/>
+		<conf name="scoveragePlugin" visibility="private" description=""/>
 	</configurations>
 	<publications>
 		<artifact name="akka-assignment-02_2.11" type="pom" ext="pom" conf="pom"/>

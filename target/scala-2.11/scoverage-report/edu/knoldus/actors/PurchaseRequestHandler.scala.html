@@ -1,0 +1,952 @@
+<html>
+      <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title id="title">
+          edu/knoldus/actors/PurchaseRequestHandler.scala.html
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/css/theme.default.min.css" type="text/css"/><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.20.1/js/jquery.tablesorter.min.js"></script><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" type="text/css"/><script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script><script type="text/javascript">
+        $(document).ready(function() {$(".tablesorter").tablesorter();});
+      </script>
+        <style>
+          table.codegrid { font-family: monospace; font-size: 12px; width: auto!important; }table.statementlist { width: auto!important; font-size: 13px; } table.codegrid td { padding: 0!important; border: 0!important } table td.linenumber { width: 40px!important; } 
+        </style>
+      </head>
+      <body style="font-family: monospace;">
+        <ul class="nav nav-tabs">
+          <li>
+            <a href="#codegrid" data-toggle="tab">Codegrid</a>
+          </li>
+          <li>
+            <a href="#statementlist" data-toggle="tab">Statement List</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="codegrid">
+            <pre style='font-size: 12pt; font-family: courier;'>1 <span style=''>package edu.knoldus.actors
+</span>2 <span style=''>
+</span>3 <span style=''>import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+</span>4 <span style=''>import akka.pattern.ask
+</span>5 <span style=''>import akka.util.Timeout
+</span>6 <span style=''>import edu.knoldus.models.{Booking, Customer, GalaxyS8}
+</span>7 <span style=''>
+</span>8 <span style=''>import scala.concurrent.ExecutionContext.Implicits.global
+</span>9 <span style=''>import scala.concurrent.duration._
+</span>10 <span style=''>
+</span>11 <span style=''>class PurchaseRequestHandler(validationRef: ActorRef) extends Actor with ActorLogging {
+</span>12 <span style=''>
+</span>13 <span style=''>  implicit val timeout = </span><span style='background: #AEF1AE'>Timeout(1000.seconds)</span><span style=''>
+</span>14 <span style=''>  var senderRef: Option[ActorRef] = </span><span style='background: #AEF1AE'>None</span><span style=''>
+</span>15 <span style=''>
+</span>16 <span style=''>  override def receive = {
+</span>17 <span style=''>    case customer: Customer =&gt;
+</span>18 <span style=''>      </span><span style='background: #AEF1AE'>senderRef = Some(sender)</span><span style=''>
+</span>19 <span style=''>      </span><span style='background: #AEF1AE'>log.info(s&quot;Purchase Request from Customer: ${customer.name}, ${customer.address}, ${customer.mobileNumber}&quot;)</span><span style=''>
+</span>20 <span style=''>      //val validationRef = context.actorOf(Props(classOf[ValidationActor], purchaseRef))
+</span>21 <span style=''>      val request = </span><span style='background: #AEF1AE'>validationRef ? Booking</span><span style=''>
+</span>22 <span style=''>      </span><span style='background: #AEF1AE'>request.map {
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        case GalaxyS8 =&gt;
+</span>24 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>log.info(&quot;PurchaseRequestHandler: Booking Request Processed&quot;)</span><span style='background: #AEF1AE'>
+</span>25 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>senderRef.foreach(_ ! s&quot;${customer.name}, Your Booking Done Successfully!!&quot;)</span><span style='background: #AEF1AE'>
+</span>26 <span style=''></span><span style='background: #AEF1AE'>        case x =&gt;
+</span>27 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>log.info(s&quot;PurchaseRequestHandler: $x&quot;)</span><span style='background: #AEF1AE'>
+</span>28 <span style=''></span><span style='background: #AEF1AE'>          </span><span style='background: #F0ADAD'>senderRef.foreach(_ ! s&quot;Booking not done!&quot;)</span><span style='background: #AEF1AE'>
+</span>29 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>30 <span style=''>
+</span>31 <span style=''>    case _ =&gt;
+</span>32 <span style=''>      </span><span style='background: #F0ADAD'>log.info(s&quot;PurchaseRequestHandler: Invalid Request!&quot;)</span><span style=''>
+</span>33 <span style=''>  }
+</span>34 <span style=''>
+</span>35 <span style=''>}
+</span>36 <span style=''>
+</span>37 <span style=''>object PurchaseRequestHandler {
+</span>38 <span style=''>
+</span>39 <span style=''>  def purchaseRequestProps(validationRef: ActorRef) = </span><span style='background: #AEF1AE'>Props(classOf[PurchaseRequestHandler], validationRef)</span><span style=''>
+</span>40 <span style=''>
+</span>41 <span style=''>}
+</span></pre>
+          </div>
+          <div class="tab-pane" id="statementlist">
+            <table cellspacing="0" cellpadding="0" class="table statementlist">
+      <tr>
+        <th>Line</th>
+        <th>Stmt Id</th>
+        <th>Pos</th>
+        <th>Tree</th>
+        <th>Symbol</th>
+        <th>Code</th>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          62
+        </td>
+        <td>
+          399
+          -
+          420
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.util.Timeout.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.util.Timeout.apply(scala.concurrent.duration.`package`.DurationInt(1000).seconds)
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          61
+        </td>
+        <td>
+          407
+          -
+          419
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.concurrent.duration.DurationConversions.seconds
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.duration.`package`.DurationInt(1000).seconds
+        </td>
+      </tr><tr>
+        <td>
+          13
+        </td>
+        <td>
+          60
+        </td>
+        <td>
+          407
+          -
+          411
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1000
+        </td>
+      </tr><tr>
+        <td>
+          14
+        </td>
+        <td>
+          63
+        </td>
+        <td>
+          457
+          -
+          461
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          scala.None
+        </td>
+        <td style="background: #AEF1AE">
+          scala.None
+        </td>
+      </tr><tr>
+        <td>
+          16
+        </td>
+        <td>
+          99
+        </td>
+        <td>
+          488
+          -
+          488
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseRequestHandler.$anonfun.&lt;init&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          new $anonfun()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          65
+        </td>
+        <td>
+          539
+          -
+          551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Some.apply
+        </td>
+        <td style="background: #AEF1AE">
+          scala.Some.apply[akka.actor.ActorRef](PurchaseRequestHandler.this.sender())
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          64
+        </td>
+        <td>
+          544
+          -
+          550
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.Actor.sender
+        </td>
+        <td style="background: #AEF1AE">
+          PurchaseRequestHandler.this.sender()
+        </td>
+      </tr><tr>
+        <td>
+          18
+        </td>
+        <td>
+          66
+        </td>
+        <td>
+          527
+          -
+          551
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseRequestHandler.senderRef_=
+        </td>
+        <td style="background: #AEF1AE">
+          PurchaseRequestHandler.this.senderRef_=(scala.Some.apply[akka.actor.ActorRef](PurchaseRequestHandler.this.sender()))
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          68
+        </td>
+        <td>
+          617
+          -
+          620
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;, &quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          71
+        </td>
+        <td>
+          603
+          -
+          616
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.models.Customer.name
+        </td>
+        <td style="background: #AEF1AE">
+          customer.name
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          74
+        </td>
+        <td>
+          567
+          -
+          665
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #AEF1AE">
+          scala.StringContext.apply(&quot;Purchase Request from Customer: &quot;, &quot;, &quot;, &quot;, &quot;, &quot;&quot;).s(customer.name, customer.address, customer.mobileNumber)
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          73
+        </td>
+        <td>
+          642
+          -
+          663
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.models.Customer.mobileNumber
+        </td>
+        <td style="background: #AEF1AE">
+          customer.mobileNumber
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          67
+        </td>
+        <td>
+          569
+          -
+          602
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;Purchase Request from Customer: &quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          70
+        </td>
+        <td>
+          664
+          -
+          665
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          69
+        </td>
+        <td>
+          638
+          -
+          641
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          &quot;, &quot;
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          72
+        </td>
+        <td>
+          621
+          -
+          637
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.models.Customer.address
+        </td>
+        <td style="background: #AEF1AE">
+          customer.address
+        </td>
+      </tr><tr>
+        <td>
+          19
+        </td>
+        <td>
+          75
+        </td>
+        <td>
+          558
+          -
+          666
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.event.LoggingAdapter.info
+        </td>
+        <td style="background: #AEF1AE">
+          PurchaseRequestHandler.this.log.info(scala.StringContext.apply(&quot;Purchase Request from Customer: &quot;, &quot;, &quot;, &quot;, &quot;, &quot;&quot;).s(customer.name, customer.address, customer.mobileNumber))
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          77
+        </td>
+        <td>
+          793
+          -
+          800
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.models.Booking
+        </td>
+        <td style="background: #AEF1AE">
+          edu.knoldus.models.Booking
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          80
+        </td>
+        <td>
+          777
+          -
+          800
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.pattern.AskableActorRef.?
+        </td>
+        <td style="background: #AEF1AE">
+          akka.pattern.`package`.ask(PurchaseRequestHandler.this.validationRef).?(edu.knoldus.models.Booking)(PurchaseRequestHandler.this.timeout, PurchaseRequestHandler.this.self)
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          76
+        </td>
+        <td>
+          777
+          -
+          790
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseRequestHandler.validationRef
+        </td>
+        <td style="background: #AEF1AE">
+          PurchaseRequestHandler.this.validationRef
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          79
+        </td>
+        <td>
+          791
+          -
+          791
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.Actor.self
+        </td>
+        <td style="background: #AEF1AE">
+          PurchaseRequestHandler.this.self
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          78
+        </td>
+        <td>
+          791
+          -
+          791
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.actors.PurchaseRequestHandler.timeout
+        </td>
+        <td style="background: #AEF1AE">
+          PurchaseRequestHandler.this.timeout
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          95
+        </td>
+        <td>
+          807
+          -
+          1134
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.map
+        </td>
+        <td style="background: #AEF1AE">
+          request.map[Unit](((x0$1: Any) =&gt; x0$1 match {
+  case edu.knoldus.models.GalaxyS8 =&gt; {
+    PurchaseRequestHandler.this.log.info(&quot;PurchaseRequestHandler: Booking Request Processed&quot;);
+    PurchaseRequestHandler.this.senderRef.foreach[Unit](((x$1: akka.actor.ActorRef) =&gt; akka.this.actor.`package`.actorRef2Scala(x$1).!(scala.StringContext.apply(&quot;&quot;, &quot;, Your Booking Done Successfully!!&quot;).s(customer.name))(PurchaseRequestHandler.this.self)))
+  }
+  case (x @ _) =&gt; {
+    PurchaseRequestHandler.this.log.info(scala.StringContext.apply(&quot;PurchaseRequestHandler: &quot;, &quot;&quot;).s(x));
+    PurchaseRequestHandler.this.senderRef.foreach[Unit](((x$2: akka.actor.ActorRef) =&gt; akka.this.actor.`package`.actorRef2Scala(x$2).!(scala.StringContext.apply(&quot;Booking not done!&quot;).s())(PurchaseRequestHandler.this.self)))
+  }
+}))(scala.concurrent.ExecutionContext.Implicits.global)
+        </td>
+      </tr><tr>
+        <td>
+          22
+        </td>
+        <td>
+          96
+        </td>
+        <td>
+          819
+          -
+          819
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          ()
+        </td>
+      </tr><tr>
+        <td>
+          24
+        </td>
+        <td>
+          81
+        </td>
+        <td>
+          856
+          -
+          917
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.event.LoggingAdapter.info
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.log.info(&quot;PurchaseRequestHandler: Booking Request Processed&quot;)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          83
+        </td>
+        <td>
+          968
+          -
+          1003
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;, Your Booking Done Successfully!!&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          86
+        </td>
+        <td>
+          948
+          -
+          948
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.Actor.self
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.self
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          82
+        </td>
+        <td>
+          952
+          -
+          953
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #F0ADAD">
+          &quot;&quot;
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          85
+        </td>
+        <td>
+          950
+          -
+          1003
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;&quot;, &quot;, Your Booking Done Successfully!!&quot;).s(customer.name)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          88
+        </td>
+        <td>
+          928
+          -
+          1004
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.senderRef.foreach[Unit](((x$1: akka.actor.ActorRef) =&gt; akka.this.actor.`package`.actorRef2Scala(x$1).!(scala.StringContext.apply(&quot;&quot;, &quot;, Your Booking Done Successfully!!&quot;).s(customer.name))(PurchaseRequestHandler.this.self)))
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          87
+        </td>
+        <td>
+          946
+          -
+          1003
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.ScalaActorRef.!
+        </td>
+        <td style="background: #F0ADAD">
+          akka.this.actor.`package`.actorRef2Scala(x$1).!(scala.StringContext.apply(&quot;&quot;, &quot;, Your Booking Done Successfully!!&quot;).s(customer.name))(PurchaseRequestHandler.this.self)
+        </td>
+      </tr><tr>
+        <td>
+          25
+        </td>
+        <td>
+          84
+        </td>
+        <td>
+          954
+          -
+          967
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          edu.knoldus.models.Customer.name
+        </td>
+        <td style="background: #F0ADAD">
+          customer.name
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          89
+        </td>
+        <td>
+          1042
+          -
+          1071
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;PurchaseRequestHandler: &quot;, &quot;&quot;).s(x)
+        </td>
+      </tr><tr>
+        <td>
+          27
+        </td>
+        <td>
+          90
+        </td>
+        <td>
+          1033
+          -
+          1072
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.event.LoggingAdapter.info
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.log.info(scala.StringContext.apply(&quot;PurchaseRequestHandler: &quot;, &quot;&quot;).s(x))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          92
+        </td>
+        <td>
+          1103
+          -
+          1103
+        </td>
+        <td>
+          Select
+        </td>
+        <td>
+          akka.actor.Actor.self
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.self
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          91
+        </td>
+        <td>
+          1105
+          -
+          1125
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;Booking not done!&quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          94
+        </td>
+        <td>
+          1083
+          -
+          1126
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.Option.foreach
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.senderRef.foreach[Unit](((x$2: akka.actor.ActorRef) =&gt; akka.this.actor.`package`.actorRef2Scala(x$2).!(scala.StringContext.apply(&quot;Booking not done!&quot;).s())(PurchaseRequestHandler.this.self)))
+        </td>
+      </tr><tr>
+        <td>
+          28
+        </td>
+        <td>
+          93
+        </td>
+        <td>
+          1101
+          -
+          1125
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          akka.actor.ScalaActorRef.!
+        </td>
+        <td style="background: #F0ADAD">
+          akka.this.actor.`package`.actorRef2Scala(x$2).!(scala.StringContext.apply(&quot;Booking not done!&quot;).s())(PurchaseRequestHandler.this.self)
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          98
+        </td>
+        <td>
+          1156
+          -
+          1209
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.event.LoggingAdapter.info
+        </td>
+        <td style="background: #F0ADAD">
+          PurchaseRequestHandler.this.log.info(scala.StringContext.apply(&quot;PurchaseRequestHandler: Invalid Request!&quot;).s())
+        </td>
+      </tr><tr>
+        <td>
+          32
+        </td>
+        <td>
+          97
+        </td>
+        <td>
+          1165
+          -
+          1208
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.StringContext.s
+        </td>
+        <td style="background: #F0ADAD">
+          scala.StringContext.apply(&quot;PurchaseRequestHandler: Invalid Request!&quot;).s()
+        </td>
+      </tr><tr>
+        <td>
+          39
+        </td>
+        <td>
+          100
+        </td>
+        <td>
+          1305
+          -
+          1358
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          akka.actor.Props.apply
+        </td>
+        <td style="background: #AEF1AE">
+          akka.actor.Props.apply(classOf[edu.knoldus.actors.PurchaseRequestHandler], validationRef)
+        </td>
+      </tr>
+    </table>
+          </div>
+        </div>
+      </body>
+    </html>
