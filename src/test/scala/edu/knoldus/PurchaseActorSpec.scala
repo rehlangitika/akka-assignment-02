@@ -1,12 +1,13 @@
 package edu.knoldus
 
 import akka.actor.ActorSystem
-import akka.testkit.{CallingThreadDispatcher, EventFilter, ImplicitSender, InfoFilter, TestKit}
+import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
-import edu.knoldus.actors.{PurchaseActor, ValidationActor}
-import edu.knoldus.models.{Booking, Checking}
+import edu.knoldus.actors.PurchaseActor
+import edu.knoldus.actors.PurchaseActor.GetState
+import edu.knoldus.models.{Checking, Customer}
 import org.scalatest.{BeforeAndAfterAll, MustMatchers, WordSpecLike}
-import PurchaseActorSpec._
+
 object PurchaseActorSpec {
   val testSystem = {
     val config = ConfigFactory.parseString(
@@ -18,7 +19,9 @@ object PurchaseActorSpec {
   }
 }
 
-class PurchaseActorSpec extends TestKit(ActorSystem("testSystem")) with WordSpecLike
+import edu.knoldus.PurchaseActorSpec._
+
+class PurchaseActorSpec extends TestKit(testSystem) with WordSpecLike
   with BeforeAndAfterAll with MustMatchers with ImplicitSender {
 
   override protected def afterAll(): Unit = {
@@ -26,29 +29,30 @@ class PurchaseActorSpec extends TestKit(ActorSystem("testSystem")) with WordSpec
   }
 
   "A Purchase Actor" must {
+
+    val purchaseProps = PurchaseActor.purchaseProps
+    val purchaseRef = system.actorOf(purchaseProps)
+    val customer = Customer("Gitika", "Paschim Vihar", 93456, 99999)
     "send a message to another actor when it is finished processing" in {
 
-      val purchaseProps = PurchaseActor.purchaseProps
-      val purchaseRef = system.actorOf(purchaseProps)
+      purchaseRef ! customer
+      purchaseRef ! GetState(testActor)
+      expectMsg(1)
+    }
+
+    "send true when it received Checking" in {
 
       purchaseRef ! Checking
 
       expectMsg(true)
+    }
+
+    "send false when it receives some other message" in {
 
       purchaseRef ! "some message"
 
       expectMsg(false)
     }
-
-    /*"say PurchaseActor: Booking can be done! when receive 'Checking' " in {
-      val dispatcherId = CallingThreadDispatcher.Id
-      val props = PurchaseActor.purchaseProps.withDispatcher(dispatcherId)
-      val ref = system.actorOf(props)
-
-      /*EventFilter.info(message = "PurchaseActor: Booking can be done!", occurrences = 1).intercept{
-        ref ! "PurchaseActor: Booking can be done!"
-      }*/
-
-    }*/
   }
+
 }

@@ -1,3 +1,4 @@
 [0m[[0minfo[0m] [0m[32mValidationActorSpec:[0m[0m
 [0m[[0minfo[0m] [0m[32mA Validation Actor[0m[0m
-[0m[[0minfo[0m] [0m[32m- must send a message to another actor when it is finished processing[0m[0m
+[0m[[0minfo[0m] [0m[32m- must test ask await condition for true[0m[0m
+[0m[[0minfo[0m] [0m[32m- must test ask await condition for false[0m[0m

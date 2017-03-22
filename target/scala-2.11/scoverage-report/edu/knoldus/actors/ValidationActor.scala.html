@@ -27,7 +27,7 @@
 </span>3 <span style=''>import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 </span>4 <span style=''>import akka.pattern.ask
 </span>5 <span style=''>import akka.util.Timeout
-</span>6 <span style=''>import edu.knoldus.models.{Booking, Checking}
+</span>6 <span style=''>import edu.knoldus.models.{Checking, Customer}
 </span>7 <span style=''>
 </span>8 <span style=''>import scala.concurrent.Await
 </span>9 <span style=''>import scala.concurrent.duration._
@@ -37,23 +37,23 @@
 </span>13 <span style=''>  implicit val timeout = </span><span style='background: #AEF1AE'>Timeout(1000.seconds)</span><span style=''>
 </span>14 <span style=''>  var senderRef: Option[ActorRef] = </span><span style='background: #AEF1AE'>None</span><span style=''>
 </span>15 <span style=''>
-</span>16 <span style=''>  override def receive = {
-</span>17 <span style=''>    case Booking =&gt;
+</span>16 <span style=''>  override def receive: PartialFunction[Any, Unit] = {
+</span>17 <span style=''>    case customer: Customer =&gt;
 </span>18 <span style=''>      </span><span style='background: #AEF1AE'>senderRef = Some(sender)</span><span style=''>
 </span>19 <span style=''>      </span><span style='background: #AEF1AE'>log.info(&quot;ValidationActor: Checking if Booking can be made or not&quot;)</span><span style=''>
 </span>20 <span style=''>      val status = (</span><span style='background: #AEF1AE'>purchaseRef ? Checking).mapTo[Boolean]</span><span style=''>
-</span>21 <span style=''>      if (</span><span style='background: #AEF1AE'>Await.result(status, 1.second)</span><span style=''>) </span><span style='background: #F0ADAD'>{
-</span>22 <span style=''></span><span style='background: #F0ADAD'>        log.info(&quot;ValidationActor: Item in stock..proceeding towards booking&quot;)
-</span>23 <span style=''></span><span style='background: #F0ADAD'>        purchaseRef ! Booking
-</span>24 <span style=''></span><span style='background: #F0ADAD'>        /* booking.map {
-</span>25 <span style=''></span><span style='background: #F0ADAD'>           case GalaxyS8 =&gt; log.info(&quot;ValidationActor: Booking&quot;)
-</span>26 <span style=''></span><span style='background: #F0ADAD'>             senderRef.map(_ ! GalaxyS8)
-</span>27 <span style=''></span><span style='background: #F0ADAD'>         }*/
-</span>28 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
-</span>29 <span style=''>      else </span><span style='background: #F0ADAD'>{
-</span>30 <span style=''></span><span style='background: #F0ADAD'>        log.info(&quot;ValidationActor: Item Out of Stock!&quot;)
-</span>31 <span style=''></span><span style='background: #F0ADAD'>        senderRef.foreach(_ ! &quot;Not Available&quot;)
-</span>32 <span style=''></span><span style='background: #F0ADAD'>      }</span><span style=''>
+</span>21 <span style=''>      if (</span><span style='background: #AEF1AE'>Await.result(status, 1.second)</span><span style=''>) </span><span style='background: #AEF1AE'>{
+</span>22 <span style=''></span><span style='background: #AEF1AE'>        log.info(&quot;ValidationActor: Item in stock..proceeding towards booking&quot;)
+</span>23 <span style=''></span><span style='background: #AEF1AE'>        purchaseRef ! customer
+</span>24 <span style=''></span><span style='background: #AEF1AE'>        /* booking.map {
+</span>25 <span style=''></span><span style='background: #AEF1AE'>           case GalaxyS8 =&gt; log.info(&quot;ValidationActor: Booking&quot;)
+</span>26 <span style=''></span><span style='background: #AEF1AE'>             senderRef.map(_ ! GalaxyS8)
+</span>27 <span style=''></span><span style='background: #AEF1AE'>         }*/
+</span>28 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
+</span>29 <span style=''>      else </span><span style='background: #AEF1AE'>{
+</span>30 <span style=''></span><span style='background: #AEF1AE'>        log.info(&quot;ValidationActor: Item Out of Stock!&quot;)
+</span>31 <span style=''></span><span style='background: #AEF1AE'>        senderRef.foreach(_ ! &quot;Not Available&quot;)
+</span>32 <span style=''></span><span style='background: #AEF1AE'>      }</span><span style=''>
 </span>33 <span style=''>
 </span>34 <span style=''>  }
 </span>35 <span style=''>
@@ -80,33 +80,12 @@
           13
         </td>
         <td>
-          101
+          56
         </td>
         <td>
-          360
+          353
           -
-          364
-        </td>
-        <td>
-          Literal
-        </td>
-        <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #AEF1AE">
-          1000
-        </td>
-      </tr><tr>
-        <td>
-          13
-        </td>
-        <td>
-          103
-        </td>
-        <td>
-          352
-          -
-          373
+          374
         </td>
         <td>
           Apply
@@ -122,12 +101,12 @@
           13
         </td>
         <td>
-          102
+          55
         </td>
         <td>
-          360
+          361
           -
-          372
+          373
         </td>
         <td>
           Select
@@ -140,15 +119,36 @@
         </td>
       </tr><tr>
         <td>
+          13
+        </td>
+        <td>
+          54
+        </td>
+        <td>
+          361
+          -
+          365
+        </td>
+        <td>
+          Literal
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          1000
+        </td>
+      </tr><tr>
+        <td>
           14
         </td>
         <td>
-          104
+          57
         </td>
         <td>
-          410
+          411
           -
-          414
+          415
         </td>
         <td>
           Select
@@ -164,12 +164,12 @@
           16
         </td>
         <td>
-          129
+          81
         </td>
         <td>
-          441
+          470
           -
-          441
+          470
         </td>
         <td>
           Apply
@@ -185,33 +185,12 @@
           18
         </td>
         <td>
-          107
+          59
         </td>
         <td>
-          469
+          521
           -
-          493
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          edu.knoldus.actors.ValidationActor.senderRef_=
-        </td>
-        <td style="background: #AEF1AE">
-          ValidationActor.this.senderRef_=(scala.Some.apply[akka.actor.ActorRef](ValidationActor.this.sender()))
-        </td>
-      </tr><tr>
-        <td>
-          18
-        </td>
-        <td>
-          106
-        </td>
-        <td>
-          481
-          -
-          493
+          533
         </td>
         <td>
           Apply
@@ -227,12 +206,12 @@
           18
         </td>
         <td>
-          105
+          58
         </td>
         <td>
-          486
+          526
           -
-          492
+          532
         </td>
         <td>
           Apply
@@ -245,15 +224,36 @@
         </td>
       </tr><tr>
         <td>
+          18
+        </td>
+        <td>
+          60
+        </td>
+        <td>
+          509
+          -
+          533
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          edu.knoldus.actors.ValidationActor.senderRef_=
+        </td>
+        <td style="background: #AEF1AE">
+          ValidationActor.this.senderRef_=(scala.Some.apply[akka.actor.ActorRef](ValidationActor.this.sender()))
+        </td>
+      </tr><tr>
+        <td>
           19
         </td>
         <td>
-          108
+          61
         </td>
         <td>
-          500
+          540
           -
-          567
+          607
         </td>
         <td>
           Apply
@@ -269,54 +269,12 @@
           20
         </td>
         <td>
-          110
+          62
         </td>
         <td>
-          602
+          628
           -
-          610
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          edu.knoldus.models.Checking
-        </td>
-        <td style="background: #AEF1AE">
-          edu.knoldus.models.Checking
-        </td>
-      </tr><tr>
-        <td>
-          20
-        </td>
-        <td>
-          113
-        </td>
-        <td>
-          588
-          -
-          626
-        </td>
-        <td>
-          ApplyToImplicitArgs
-        </td>
-        <td>
-          scala.concurrent.Future.mapTo
-        </td>
-        <td style="background: #AEF1AE">
-          akka.pattern.`package`.ask(ValidationActor.this.purchaseRef).?(edu.knoldus.models.Checking)(ValidationActor.this.timeout, ValidationActor.this.self).mapTo[Boolean]((ClassTag.Boolean: scala.reflect.ClassTag[Boolean]))
-        </td>
-      </tr><tr>
-        <td>
-          20
-        </td>
-        <td>
-          109
-        </td>
-        <td>
-          588
-          -
-          599
+          639
         </td>
         <td>
           Select
@@ -332,12 +290,12 @@
           20
         </td>
         <td>
-          112
+          65
         </td>
         <td>
-          600
+          640
           -
-          600
+          640
         </td>
         <td>
           Select
@@ -353,12 +311,12 @@
           20
         </td>
         <td>
-          111
+          64
         </td>
         <td>
-          600
+          640
           -
-          600
+          640
         </td>
         <td>
           Select
@@ -371,60 +329,57 @@
         </td>
       </tr><tr>
         <td>
-          21
+          20
         </td>
         <td>
-          122
+          63
         </td>
         <td>
-          669
+          642
           -
-          931
+          650
         </td>
         <td>
-          Block
+          Select
         </td>
         <td>
-          &lt;nosymbol&gt;
-        </td>
-        <td style="background: #F0ADAD">
-          {
-  ValidationActor.this.log.info(&quot;ValidationActor: Item in stock..proceeding towards booking&quot;);
-  akka.this.actor.`package`.actorRef2Scala(ValidationActor.this.purchaseRef).!(edu.knoldus.models.Booking)(ValidationActor.this.self)
-}
-        </td>
-      </tr><tr>
-        <td>
-          21
-        </td>
-        <td>
-          116
-        </td>
-        <td>
-          637
-          -
-          667
-        </td>
-        <td>
-          Apply
-        </td>
-        <td>
-          scala.concurrent.Await.result
+          edu.knoldus.models.Checking
         </td>
         <td style="background: #AEF1AE">
-          scala.concurrent.Await.result[Boolean](status, scala.concurrent.duration.`package`.DurationInt(1).second)
+          edu.knoldus.models.Checking
+        </td>
+      </tr><tr>
+        <td>
+          20
+        </td>
+        <td>
+          66
+        </td>
+        <td>
+          628
+          -
+          666
+        </td>
+        <td>
+          ApplyToImplicitArgs
+        </td>
+        <td>
+          scala.concurrent.Future.mapTo
+        </td>
+        <td style="background: #AEF1AE">
+          akka.pattern.`package`.ask(ValidationActor.this.purchaseRef).?(edu.knoldus.models.Checking)(ValidationActor.this.timeout, ValidationActor.this.self).mapTo[Boolean]((ClassTag.Boolean: scala.reflect.ClassTag[Boolean]))
         </td>
       </tr><tr>
         <td>
           21
         </td>
         <td>
-          115
+          68
         </td>
         <td>
-          658
+          698
           -
-          666
+          706
         </td>
         <td>
           Select
@@ -440,12 +395,36 @@
           21
         </td>
         <td>
-          114
+          74
         </td>
         <td>
-          658
+          709
           -
-          659
+          972
+        </td>
+        <td>
+          Block
+        </td>
+        <td>
+          &lt;nosymbol&gt;
+        </td>
+        <td style="background: #AEF1AE">
+          {
+  ValidationActor.this.log.info(&quot;ValidationActor: Item in stock..proceeding towards booking&quot;);
+  akka.this.actor.`package`.actorRef2Scala(ValidationActor.this.purchaseRef).!(customer)(ValidationActor.this.self)
+}
+        </td>
+      </tr><tr>
+        <td>
+          21
+        </td>
+        <td>
+          67
+        </td>
+        <td>
+          698
+          -
+          699
         </td>
         <td>
           Literal
@@ -458,15 +437,36 @@
         </td>
       </tr><tr>
         <td>
+          21
+        </td>
+        <td>
+          69
+        </td>
+        <td>
+          677
+          -
+          707
+        </td>
+        <td>
+          Apply
+        </td>
+        <td>
+          scala.concurrent.Await.result
+        </td>
+        <td style="background: #AEF1AE">
+          scala.concurrent.Await.result[Boolean](status, scala.concurrent.duration.`package`.DurationInt(1).second)
+        </td>
+      </tr><tr>
+        <td>
           22
         </td>
         <td>
-          117
+          70
         </td>
         <td>
-          679
+          719
           -
-          749
+          789
         </td>
         <td>
           Apply
@@ -474,7 +474,7 @@
         <td>
           akka.event.LoggingAdapter.info
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ValidationActor.this.log.info(&quot;ValidationActor: Item in stock..proceeding towards booking&quot;)
         </td>
       </tr><tr>
@@ -482,33 +482,12 @@
           23
         </td>
         <td>
-          119
+          71
         </td>
         <td>
-          772
+          798
           -
-          779
-        </td>
-        <td>
-          Select
-        </td>
-        <td>
-          edu.knoldus.models.Booking
-        </td>
-        <td style="background: #F0ADAD">
-          edu.knoldus.models.Booking
-        </td>
-      </tr><tr>
-        <td>
-          23
-        </td>
-        <td>
-          118
-        </td>
-        <td>
-          758
-          -
-          769
+          809
         </td>
         <td>
           Select
@@ -516,7 +495,7 @@
         <td>
           edu.knoldus.actors.ValidationActor.purchaseRef
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ValidationActor.this.purchaseRef
         </td>
       </tr><tr>
@@ -524,12 +503,12 @@
           23
         </td>
         <td>
-          121
+          73
         </td>
         <td>
-          758
+          798
           -
-          779
+          820
         </td>
         <td>
           ApplyToImplicitArgs
@@ -537,20 +516,20 @@
         <td>
           akka.actor.ScalaActorRef.!
         </td>
-        <td style="background: #F0ADAD">
-          akka.this.actor.`package`.actorRef2Scala(ValidationActor.this.purchaseRef).!(edu.knoldus.models.Booking)(ValidationActor.this.self)
+        <td style="background: #AEF1AE">
+          akka.this.actor.`package`.actorRef2Scala(ValidationActor.this.purchaseRef).!(customer)(ValidationActor.this.self)
         </td>
       </tr><tr>
         <td>
           23
         </td>
         <td>
-          120
+          72
         </td>
         <td>
-          770
+          810
           -
-          770
+          810
         </td>
         <td>
           Select
@@ -558,7 +537,7 @@
         <td>
           akka.actor.Actor.self
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ValidationActor.this.self
         </td>
       </tr><tr>
@@ -566,12 +545,12 @@
           29
         </td>
         <td>
-          128
+          80
         </td>
         <td>
-          943
+          984
           -
-          1055
+          1096
         </td>
         <td>
           Block
@@ -579,7 +558,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           {
   ValidationActor.this.log.info(&quot;ValidationActor: Item Out of Stock!&quot;);
   ValidationActor.this.senderRef.foreach[Unit](((x$1: akka.actor.ActorRef) =&gt; akka.this.actor.`package`.actorRef2Scala(x$1).!(&quot;Not Available&quot;)(ValidationActor.this.self)))
@@ -590,12 +569,12 @@
           30
         </td>
         <td>
-          123
+          75
         </td>
         <td>
-          953
+          994
           -
-          1000
+          1041
         </td>
         <td>
           Apply
@@ -603,7 +582,7 @@
         <td>
           akka.event.LoggingAdapter.info
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ValidationActor.this.log.info(&quot;ValidationActor: Item Out of Stock!&quot;)
         </td>
       </tr><tr>
@@ -611,12 +590,12 @@
           31
         </td>
         <td>
-          125
+          77
         </td>
         <td>
-          1029
+          1070
           -
-          1029
+          1070
         </td>
         <td>
           Select
@@ -624,7 +603,7 @@
         <td>
           akka.actor.Actor.self
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ValidationActor.this.self
         </td>
       </tr><tr>
@@ -632,12 +611,12 @@
           31
         </td>
         <td>
-          124
+          76
         </td>
         <td>
-          1031
+          1072
           -
-          1046
+          1087
         </td>
         <td>
           Literal
@@ -645,7 +624,7 @@
         <td>
           &lt;nosymbol&gt;
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           &quot;Not Available&quot;
         </td>
       </tr><tr>
@@ -653,12 +632,12 @@
           31
         </td>
         <td>
-          127
+          79
         </td>
         <td>
-          1009
+          1050
           -
-          1047
+          1088
         </td>
         <td>
           Apply
@@ -666,7 +645,7 @@
         <td>
           scala.Option.foreach
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           ValidationActor.this.senderRef.foreach[Unit](((x$1: akka.actor.ActorRef) =&gt; akka.this.actor.`package`.actorRef2Scala(x$1).!(&quot;Not Available&quot;)(ValidationActor.this.self)))
         </td>
       </tr><tr>
@@ -674,12 +653,12 @@
           31
         </td>
         <td>
-          126
+          78
         </td>
         <td>
-          1027
+          1068
           -
-          1046
+          1087
         </td>
         <td>
           ApplyToImplicitArgs
@@ -687,7 +666,7 @@
         <td>
           akka.actor.ScalaActorRef.!
         </td>
-        <td style="background: #F0ADAD">
+        <td style="background: #AEF1AE">
           akka.this.actor.`package`.actorRef2Scala(x$1).!(&quot;Not Available&quot;)(ValidationActor.this.self)
         </td>
       </tr><tr>
@@ -695,12 +674,12 @@
           40
         </td>
         <td>
-          130
+          82
         </td>
         <td>
-          1138
+          1179
           -
-          1182
+          1223
         </td>
         <td>
           Apply

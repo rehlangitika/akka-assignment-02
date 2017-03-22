@@ -26,19 +26,21 @@ object BookingPhone extends App {
   implicit val timeout = Timeout(1000.seconds)
   val actorSystem = ActorSystem("BookingPhone", config)
   val purchaseRef = actorSystem.actorOf(FromConfig.props(PurchaseActor.purchaseProps), "poolRouter")
-  //val validationRef = actorSystem.actorOf(Props(classOf[ValidationActor], purchaseRef))
   val validationRef = actorSystem.actorOf(ValidationActor.validationProps(purchaseRef))
-  //val phoneRequestRef = actorSystem.actorOf(Props(classOf[PurchaseRequestHandler], validationRef))
   val phoneRequestRef = actorSystem.actorOf(PurchaseRequestHandler.purchaseRequestProps(validationRef))
-  //val phoneRequestRef1 = actorSystem.actorOf(Props(classOf[PurchaseRequestHandler], validationRef))
   val phoneRequestRef1 = actorSystem.actorOf(PurchaseRequestHandler.purchaseRequestProps(validationRef))
+  val phoneRequestRef2 = actorSystem.actorOf(PurchaseRequestHandler.purchaseRequestProps(validationRef))
   val request = phoneRequestRef ? Customer("Gitika", "Paschim Vihar", 3455, 9999)
   request.map { result =>
     println(result)
   }
 
   val request1 = phoneRequestRef1 ? Customer("Nikita", "Paschim Vihar", 3455, 9999)
-  request.map { result =>
+  request1.map { result =>
+    println(result)
+  }
+  val request2 = phoneRequestRef2 ? Customer("Nikita", "Paschim Vihar", 3455, 9999)
+  request1.map { result =>
     println(result)
   }
 
